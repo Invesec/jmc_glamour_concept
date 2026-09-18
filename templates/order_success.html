@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Order Placed — {{ order.reference }}{% endblock %}
+{% block content %}
+
+<section class="order-section">
+  <div class="wrap wrap-narrow">
+    <div class="order-card success-card">
+      <p class="eyebrow-free">Order received</p>
+      <h1>Pay by transfer to complete your order</h1>
+      <p class="order-price">{{ order.service_name }}</p>
+
+      <div class="reference-box">
+        <span class="reference-label">Your order reference</span>
+        <span class="reference-value">{{ order.reference }}</span>
+      </div>
+
+      <div class="bank-box">
+        <div class="bank-row"><span>Bank</span><strong>{{ bank.bank_name }}</strong></div>
+        <div class="bank-row"><span>Account name</span><strong>{{ bank.account_name }}</strong></div>
+        <div class="bank-row"><span>Account number</span><strong>{{ bank.account_number }}</strong></div>
+        <div class="bank-row"><span>Amount</span><strong>{% if order.price %}&#8358;{{ "{:,}".format(order.price) }}{% else %}To be confirmed on WhatsApp{% endif %}</strong></div>
+      </div>
+
+      <p class="instruction-note">
+        Use <strong>{{ order.reference }}</strong> as your transfer description or narration, then send your
+        payment receipt to us on WhatsApp so we can confirm and start processing right away.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://wa.me/{{ whatsapp_number }}?text=Hi%2C%20I%20just%20placed%20order%20{{ order.reference }}%20for%20{{ order.service_name|urlencode }}.%20Here%20is%20my%20payment%20receipt."
+           target="_blank" rel="noopener" class="btn btn-primary">Send Receipt on WhatsApp</a>
+        <a href="{{ url_for('track') }}" class="btn btn-ghost">Track This Order</a>
+      </div>
+
+      <p class="save-ref-note">Save your reference you'll need it to track this order.</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

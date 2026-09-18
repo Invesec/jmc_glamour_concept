@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — JMC Glamour Concept{% endblock %}
+{% block content %}
+
+<section class="order-section">
+  <div class="wrap wrap-narrow">
+    <div class="order-card">
+      <p class="eyebrow-free">Staff access</p>
+      <h1>Admin Login</h1>
+
+      <form method="POST" class="order-form">
+        <label>
+          Username
+          <input type="text" name="username" required autofocus>
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" required>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Log In</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

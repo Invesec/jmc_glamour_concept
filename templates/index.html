@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}JMC Glamour Concept JAMB, WAEC/NECO & School Services{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <h1>Your JAMB, WAEC and admission paperwork, handled without the queue.</h1>
+    <p class="hero-sub">
+      Tell us what you need, pay by transfer, and we process it. From JAMB registration
+      to school fees and recruitment forms, JMC Glamour Concept handles the running around
+      for students across Nigeria.
+    </p>
+    <div class="hero-actions">
+      <a href="#services" class="btn btn-primary">See Services &amp; Prices</a>
+      <a href="{{ url_for('track') }}" class="btn btn-ghost">Track an Order</a>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="services-section">
+  <div class="wrap">
+    <h2 class="section-title">Services &amp; Prices</h2>
+    <p class="section-lead">Select a service to place an order. Prices marked "Contact for price" depend on your specific institution or request we'll confirm the exact amount by WhatsApp before you pay.</p>
+
+    {% for category in services %}
+    <div class="service-category">
+      <h3>{{ category.category }}</h3>
+      <div class="service-list">
+        {% for item in category['items'] %}
+        <a href="{{ url_for('order', slug=item.slug) }}" class="service-row">
+          <span class="service-row-name">{{ item.name }}</span>
+          <span class="service-row-price">
+            {% if item.price %}&#8358;{{ "{:,}".format(item.price) }}{% else %}Contact for price{% endif %}
+          </span>
+          <span class="service-row-cta">Order &rarr;</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="how-it-works">
+  <div class="wrap">
+    <h2 class="section-title">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <h4>Choose your service</h4>
+        <p>Pick what you need from the list above and fill in your details.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <h4>Pay by transfer</h4>
+        <p>You'll get our account details and a unique order reference to use as your transfer description.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <h4>We process it</h4>
+        <p>Once payment is confirmed, we handle the registration, printing, or payment on your behalf.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">4</span>
+        <h4>Track &amp; receive</h4>
+        <p>Use your order reference to check status anytime, or we'll reach you on WhatsApp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+

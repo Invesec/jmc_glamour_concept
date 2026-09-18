@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Order {{ service.name }} — JMC Glamour Concept{% endblock %}
+{% block content %}
+
+<section class="order-section">
+  <div class="wrap wrap-narrow">
+    <a href="{{ url_for('index') }}#services" class="back-link">&larr; Back to services</a>
+
+    <div class="order-card">
+      <p class="eyebrow-free">Ordering</p>
+      <h1>{{ service.name }}</h1>
+      <p class="order-price">
+        {% if service.price %}&#8358;{{ "{:,}".format(service.price) }}{% else %}Price confirmed after you submit{% endif %}
+      </p>
+      <p class="form-intro">
+        These are the exact details required to complete your {{ service.name }}. Please fill everything
+        accurately a wrong NIN, name mismatch, or missing document is the most common reason
+        registrations get delayed or rejected.
+      </p>
+
+      {% if service.slug in ['army-form', 'navy-form', 'police-form'] %}
+      <p class="form-intro">
+        Note: recruitment into the Nigerian Army, Navy and Police is free directly from the official
+        government portals. The fee here covers JMC's assistance filling and submitting your form correctly
+        not the application itself.
+      </p>
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data" class="order-form">
+        {% for f in fields %}
+        <label>
+          {{ f.label }}{% if not f.required %} <span class="optional-tag">(optional)</span>{% endif %}
+
+          {% if f.type == 'select' %}
+            <select name="{{ f.name }}" {% if f.required %}required{% endif %}>
+              <option value="" disabled {% if not values.get(f.name) %}selected{% endif %}>Select...</option>
+              {% for opt in f.options %}
+              <option value="{{ opt }}" {% if values.get(f.name) == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+
+          {% elif f.type == 'file' %}
+            <input type="file" name="{{ f.name }}" accept="image/*" {% if f.required %}required{% endif %}>
+
+          {% elif f.type == 'textarea' %}
+            <textarea name="{{ f.name }}" rows="4" {% if f.required %}required{% endif %}>{{ values.get(f.name, '') }}</textarea>
+
+          {% else %}
+            <input type="{{ f.type }}" name="{{ f.name }}" value="{{ values.get(f.name, '') }}" {% if f.required %}required{% endif %}>
+          {% endif %}
+
+          {% if f.help %}<span class="field-help">{{ f.help }}</span>{% endif %}
+        </label>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary btn-block">Continue to Payment Details</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

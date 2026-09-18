@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}JMC Glamour Concept{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="{{ url_for('index') }}" class="brand">
+      <span class="brand-mark">JMC</span>
+      <span class="brand-name">Glamour&nbsp;Concept</span>
+    </a>
+    <nav class="site-nav">
+      <a href="{{ url_for('index') }}#services">Services</a>
+      <a href="{{ url_for('track') }}">Track Order</a>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener" class="nav-whatsapp">WhatsApp Us</a>
+    </nav>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="wrap flash-wrap">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <span class="brand-mark small">JMC</span>
+      <span class="footer-tag">Glamour Concept &mdash; JAMB, WAEC/NECO &amp; school service processing, Nigeria-wide.</span>
+    </div>
+    <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">Chat on WhatsApp</a>
+  </div>
+</footer>
+</body>
+</html>

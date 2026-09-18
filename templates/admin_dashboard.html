@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — JMC Glamour Concept{% endblock %}
+{% block content %}
+
+<section class="admin-section">
+  <div class="wrap">
+    <div class="admin-header">
+      <h1>Orders</h1>
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-ghost btn-small">Log Out</a>
+    </div>
+
+    <div class="filter-tabs">
+      <a href="{{ url_for('admin_dashboard', status='all') }}" class="filter-tab {{ 'active' if status_filter == 'all' }}">All <span>{{ counts['all'] }}</span></a>
+      {% for s in status_order %}
+      <a href="{{ url_for('admin_dashboard', status=s) }}" class="filter-tab {{ 'active' if status_filter == s }}">{{ status_labels[s] }} <span>{{ counts[s] }}</span></a>
+      {% endfor %}
+    </div>
+
+    {% if orders %}
+    <div class="orders-table-wrap">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Service</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Note</th>
+            <th>Placed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td class="mono">{{ order.reference }}</td>
+            <td>{{ order.service_name }}</td>
+            <td>
+              <div class="cust-name">{{ order.full_name }}</div>
+              <div class="cust-contact">{{ order.phone }}{% if order.email %} &middot; {{ order.email }}{% endif %}</div>
+              {% if order.notes %}<div class="cust-notes">{{ order.notes }}</div>{% endif %}
+              {% set details = order.extra_data | fromjson %}
+              {% if details %}
+              <details class="order-details">
+                <summary>View submitted details</summary>
+                <dl class="detail-list">
+                  {% for label, value in details.items() %}
+                  <dt>{{ label }}</dt><dd>{{ value }}</dd>
+                  {% endfor %}
+                </dl>
+              </details>
+              {% endif %}
+              {% if order.passport_photo_filename %}
+              <a href="{{ url_for('admin_view_upload', filename=order.passport_photo_filename) }}" target="_blank" class="photo-link">View passport photo</a>
+              {% endif %}
+              {% set uploaded_files = order.files_json | fromjson %}
+              {% if uploaded_files %}
+              <div class="files-list">
+                {% for label, filename in uploaded_files.items() %}
+                <a href="{{ url_for('admin_view_upload', filename=filename) }}" target="_blank" class="photo-link">{{ label }}</a>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </td>
+            <td>{% if order.price %}&#8358;{{ "{:,}".format(order.price) }}{% else %}TBC{% endif %}</td>
+            <td>
+              <form method="POST" action="{{ url_for('update_status', order_id=order.id) }}" class="status-form">
+                <select name="status" onchange="this.form.submit()" class="status-select status-select-{{ order.status }}">
+                  {% for s in status_order %}
+                  <option value="{{ s }}" {{ 'selected' if order.status == s }}>{{ status_labels[s] }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('update_note', order_id=order.id) }}" class="note-form">
+                <input type="text" name="admin_notes" value="{{ order.admin_notes or '' }}" placeholder="Add a note...">
+                <button type="submit" class="btn-icon" title="Save note">Save</button>
+              </form>
+            </td>
+            <td class="cust-contact">{{ order.created_at.strftime('%d %b, %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty-state">No orders in this category yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

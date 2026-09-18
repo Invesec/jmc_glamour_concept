@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Order {{ service.name }} JMC Glamour Concept{% endblock %}
+{% block content %}
+
+<section class="order-section">
+  <div class="wrap wrap-narrow">
+    <a href="{{ url_for('index') }}#services" class="back-link">&larr; Back to services</a>
+
+    <div class="order-card">
+      <p class="eyebrow-free">Ordering</p>
+      <h1>{{ service.name }}</h1>
+      <p class="order-price">
+        {% if service.price %}&#8358;{{ "{:,}".format(service.price) }}{% else %}Price confirmed after you submit we'll message you on WhatsApp{% endif %}
+      </p>
+
+      <form method="POST" class="order-form">
+        <label>
+          Full name
+          <input type="text" name="full_name" required placeholder="e.g. Chioma Okafor">
+        </label>
+        <label>
+          Phone number (WhatsApp preferred)
+          <input type="tel" name="phone" required placeholder="e.g. 08012345678">
+        </label>
+        <label>
+          Email (optional)
+          <input type="email" name="email" placeholder="e.g. chioma@email.com">
+        </label>
+        <label>
+          Additional details
+          <textarea name="notes" rows="4" placeholder="JAMB reg number, institution, class of degree, or anything we should know for this order"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Continue to Payment Details</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Track Your Order — JMC Glamour Concept{% endblock %}
+{% block content %}
+
+<section class="order-section">
+  <div class="wrap wrap-narrow">
+    <div class="order-card">
+      <p class="eyebrow-free">Order status</p>
+      <h1>Track your order</h1>
+      <p class="order-price">Enter the reference you received when you placed your order.</p>
+
+      <form method="POST" class="order-form track-form">
+        <label>
+          Order reference
+          <input type="text" name="reference" required placeholder="e.g. JMC-482910" value="{{ order.reference if order else '' }}">
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Check Status</button>
+      </form>
+
+      {% if searched %}
+        {% if order %}
+          <div class="status-result status-{{ order.status }}">
+            <span class="status-label">{{ status_labels[order.status] }}</span>
+            <p class="status-service">{{ order.service_name }}</p>
+            {% if order.admin_notes %}
+              <p class="status-note">{{ order.admin_notes }}</p>
+            {% endif %}
+          </div>
+        {% else %}
+          <p class="not-found">We couldn't find an order with that reference. Please check and try again, or message us on WhatsApp.</p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
