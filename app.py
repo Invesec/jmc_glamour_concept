@@ -348,10 +348,77 @@ def _format_amount(order):
     return f"₦{order.price:,}" if order.price else "To be confirmed"
 
 
+def _build_details_table(order):
+    """Turn extra_data / notes into an HTML table for the email body."""
+    rows = [
+        ("Reference", order.reference),
+        ("Service", order.service_name),
+        ("Amount", _format_amount(order)),
+        ("Customer", order.full_name),
+        ("Phone", order.phone),
+        ("Email", order.email or "-"),
+    ]
+    if order.notes:
+        rows.append(("Notes", order.notes))
+    if order.extra_data:
+        try:
+            details = json.loads(order.extra_data)
+            rows.extend(details.items())
+        except (ValueError, TypeError):
+            pass
+
+    row_html = "".join(
+        f"<tr><td style='padding:4px 12px 4px 0;color:#555;white-space:nowrap;"
+        f"vertical-align:top;'><strong>{label}</strong></td>"
+        f"<td style='padding:4px 0;'>{value}</td></tr>"
+        for label, value in rows
+    )
+    return f"<table style='border-collapse:collapse;font-family:sans-serif;font-size:14px;'>{row_html}</table>"
+
+
+def _build_attachments(order):
+    """Read any files uploaded for this order and base64-encode them for Brevo."""
+    import base64
+
+    attachments = []
+    filenames = {}
+    if order.passport_photo_filename:
+        filenames["passport photo"] = order.passport_photo_filename
+    if order.files_json:
+        try:
+            filenames.update(json.loads(order.files_json))
+        except (ValueError, TypeError):
+            pass
+
+    for label, fname in filenames.items():
+        path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+        try:
+            with open(path, 'rb') as fh:
+                content = base64.b64encode(fh.read()).decode('ascii')
+            attachments.append({"name": f"{label} - {fname}", "content": content})
+        except OSError as e:
+            app.logger.warning(f"Could not attach {fname} to admin email: {e}")
+    return attachments
+
+
 def _send_admin_email(order):
     if not (BREVO_API_KEY and BREVO_SENDER_EMAIL and ADMIN_EMAIL):
         return
     try:
+        payload = {
+            "sender": {"email": BREVO_SENDER_EMAIL, "name": "JMC Glamour Concept"},
+            "to": [{"email": ADMIN_EMAIL}],
+            "subject": f"New order {order.reference} — {order.service_name}",
+            "htmlContent": (
+                f"<p><strong>New order placed</strong></p>"
+                f"{_build_details_table(order)}"
+                f"<p style='margin-top:14px;'>Open the admin dashboard to change status or add notes.</p>"
+            ),
+        }
+        attachments = _build_attachments(order)
+        if attachments:
+            payload["attachment"] = attachments
+
         requests.post(
             "https://api.brevo.com/v3/smtp/email",
             headers={
@@ -359,22 +426,8 @@ def _send_admin_email(order):
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            json={
-                "sender": {"email": BREVO_SENDER_EMAIL, "name": "JMC Glamour Concept"},
-                "to": [{"email": ADMIN_EMAIL}],
-                "subject": f"New order {order.reference} — {order.service_name}",
-                "htmlContent": (
-                    f"<p><strong>New order placed</strong></p>"
-                    f"<p>Reference: <strong>{order.reference}</strong><br>"
-                    f"Service: {order.service_name}<br>"
-                    f"Amount: {_format_amount(order)}<br>"
-                    f"Customer: {order.full_name}<br>"
-                    f"Phone: {order.phone}<br>"
-                    f"Email: {order.email or '-'}</p>"
-                    f"<p>Open the admin dashboard to see full details and confirm payment.</p>"
-                ),
-            },
-            timeout=8,
+            json=payload,
+            timeout=15,
         )
     except requests.RequestException as e:
         app.logger.warning(f"Admin email notification failed: {e}")
