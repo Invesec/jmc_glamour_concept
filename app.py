@@ -19,13 +19,17 @@ from werkzeug.utils import secure_filename
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+# All data that must survive redeploys (SQLite DB + uploaded files) lives
+# under one folder so a single Render persistent disk can cover both.
+DATA_DIR = os.environ.get('DATA_DIR', os.path.join(basedir, 'data'))
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
 # ── Database ──────────────────────────────────────────────────────────────
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
-    f"sqlite:///{os.path.join(basedir, 'instance', 'jmc.db')}"
+    f"sqlite:///{os.path.join(DATA_DIR, 'instance', 'jmc.db')}"
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
@@ -33,7 +37,7 @@ if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'poolclass': NullPool}
 
 db = SQLAlchemy(app)
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join(DATA_DIR, 'uploads')
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'admin_login'
@@ -726,7 +730,8 @@ def update_note(order_id):
 
 # ── Startup: create tables + default admin (runs on import, so gunicorn works too) ──
 with app.app_context():
-    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, 'instance'), exist_ok=True)
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     db.create_all()
     if not Admin.query.first():
         default_admin = Admin(username='admin')
